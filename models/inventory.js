@@ -10,4 +10,4 @@ let inventorySchema = new Schema([{
   }]
 }]);
 
-module.exports = mongoose.model('Inventory', inventorySchema);
+module.exports = mongoose.model('inventories', inventorySchema);

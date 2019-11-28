@@ -1,6 +1,9 @@
 # West Laws API
 ## Routes
- - user | POST
+
+### Done
+- <span style="color:green">user/:steamId **GET**</span>
+- <span style="color:green">user/ **POST**</span>
   ```json
   steamId: String,
   isAlive: Boolean,
@@ -11,9 +14,17 @@
   jobs: Array,
   skin: Object
   ```
- - user/:id/:token | GET DELETE
- - user/:id/:token |
- - inventory/:id/:token | GET
+- <span style="color:green">inventory/:id **GET**</span>
+  ```json
+  userId: String,
+  inventory: [{
+    resourceId: Number, 
+    quantity: Number,
+    type: String
+  }]
+  ```
+###Todo
+ - inventory/:id | GET
  - inventory/:id/:token | PUT
   ```json
   userId: String,

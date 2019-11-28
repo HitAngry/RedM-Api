@@ -14,4 +14,4 @@ const craftSchema = new Schema([{
   }]
 }]);
 
-module.exports = mongoose.model('Craft', craftSchema);
+module.exports = mongoose.model('crafts', craftSchema);

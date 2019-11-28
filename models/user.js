@@ -3,13 +3,12 @@ let Schema = mongoose.Schema;
 
 let userSchema = new Schema({
   steamId: String,
-  isAlive: Boolean,
+  isAlive: { type: Boolean, default: true },
   firstName: String,
   lastName: String,
-  groupId: String,
   money: Array,
   jobs: Array,
   skin: Object,
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('users', userSchema);

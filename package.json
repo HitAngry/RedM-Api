@@ -5,6 +5,9 @@
   "repository": "https://github.com/HitAngry/WestLaws-Api",
   "author": "Simon Philouze <contact@simonphilouze.fr>",
   "license": "MIT",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
   "dependencies": {
     "axios": "^0.19.0",
     "body-parser": "^1.19.0",

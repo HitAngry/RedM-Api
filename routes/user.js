@@ -1,13 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const userModel = require('../models/user');
+const inventoryModel = require('../models/inventory');
 
-router.get('/:id', (req, res) => {
-  if(req.params.id) {
-    console.log(req.params.id);
-    res.sendStatus(200);
-
+router.get('/:steamId', (req, res) => {
+  if(req.params) {
+    const { steamId } = req.params;
+    if(!steamId){
+      res.sendStatus(400);
+    } else {
+      userModel.find({"steamId": steamId}, function(err, user) {
+        if(err) {
+          res.sendStatus(400);
+        } else {
+          if(user.length > 0) {
+            res.status(200).send(user);
+          } else {
+            res.sendStatus(404);
+          }
+        }
+      })
+    }
   } else {
     res.sendStatus(400);
   }
@@ -19,8 +32,30 @@ router.post('/', (req, res) => {
     if(!steamId || !firstName || !lastName) {
       res.sendStatus(400);
     } else {
-      console.log(steamId, firstName, lastName);
-      res.sendStatus(200);
+      const user = new userModel({
+        steamId: steamId,
+        firstName: firstName,
+        lastName: lastName
+      });
+      user.save(function (err, user) {
+        if(err) {
+          res.sendStatus(400);
+        } else {
+          let inventory = new inventoryModel({
+            userId: user._id,
+            inventory: []
+          })
+          inventory.save(function(err, inventory) {
+            if(err) {
+              res.sendStatus(400);
+            } else {
+              res.sendStatus(200);
+              console.log(`${user.firstName} ${user.lastName} inventory has been created`);
+            }
+          })
+          console.log(`${user.firstName} ${user.lastName} has been created`);
+        }
+      });
     }
   } else {
     res.sendStatus(400);

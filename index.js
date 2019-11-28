@@ -7,7 +7,7 @@ const resourceRouter = require('./routes/resource');
 const craftRouter = require('./routes/craft');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/test', { useUnifiedTopology: true, useNewUrlParser: true }).
+mongoose.connect('mongodb://localhost:27017/westlaws', { useUnifiedTopology: true, useNewUrlParser: true }).
   catch(error => handleError(error));
 
 const port = 8050;
