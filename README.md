@@ -18,7 +18,7 @@
   ```json
   userId: String,
   inventory: [{
-    resourceId: Number, 
+    resourceId: Number,
     quantity: Number,
     type: String
   }]
@@ -29,7 +29,7 @@
   ```json
   userId: String,
   inventory: [{
-    resourceId: Number, 
+    resourceId: Number,
     quantity: Number,
     type: String
   }]
