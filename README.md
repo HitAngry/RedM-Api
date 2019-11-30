@@ -23,13 +23,19 @@
     type: String
   }]
   ```
- - <span style="color:green">resources/ | GET</span>
- - <span style="color:green">resources/:id | GET DELETE</span>
- - <span style="color:green">resources | POST</span>
+ - <span style="color:green">resources/ | **GET**</span>
+ - <span style="color:green">resources/:id | **GET** **DELETE**</span>
+ - <span style="color:green">resources | **POST**</span>
   ```json
   name: String,
   icon: String,
   description: String
+  ```
+
+ - <span style="color:green">whitelist/:id | **GET** **DELETE**</span>
+ - <span style="color:green">whitelist | **POST**</span>
+  ```json
+  steamId: String
   ```
 ###Todo
  - inventories/:id/ | PUT

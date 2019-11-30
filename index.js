@@ -4,6 +4,7 @@ const axios = require('axios');
 const userRouter = require('./routes/user');
 const inventoryRouter = require('./routes/inventory');
 const resourceRouter = require('./routes/resource');
+const whitelistRouter = require('./routes/whitelist');
 const craftRouter = require('./routes/craft');
 const mongoose = require('mongoose');
 
@@ -19,6 +20,7 @@ api.use(bodyParser.json());
 api.use('/users', userRouter);
 api.use('/crafts', craftRouter);
 api.use('/resources', resourceRouter);
+api.use('/whitelist', whitelistRouter);
 api.use('/inventories', inventoryRouter);
 
 api.listen(port, () => {
