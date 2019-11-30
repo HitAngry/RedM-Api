@@ -37,7 +37,7 @@
   ```json
   steamId: String
   ```
-###Todo
+### Todo
  - inventories/:id/ | PUT
   ```json
   userId: String,
