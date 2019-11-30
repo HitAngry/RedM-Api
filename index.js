@@ -16,10 +16,10 @@ const api = express();
 api.use(bodyParser.urlencoded({ extended: false }));
 api.use(bodyParser.json());
 
-api.use('/user', userRouter);
-api.use('/craft', craftRouter);
-api.use('/resource', resourceRouter);
-api.use('/inventory', inventoryRouter);
+api.use('/users', userRouter);
+api.use('/crafts', craftRouter);
+api.use('/resources', resourceRouter);
+api.use('/inventories', inventoryRouter);
 
 api.listen(port, () => {
   console.log(`WestLaws API listening on ${port}`);

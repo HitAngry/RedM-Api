@@ -2,8 +2,8 @@
 ## Routes
 
 ### Done
-- <span style="color:green">user/:steamId **GET**</span>
-- <span style="color:green">user/ **POST**</span>
+- <span style="color:green">users/:steamId **GET**</span>
+- <span style="color:green">users/ **POST**</span>
   ```json
   steamId: String,
   isAlive: Boolean,
@@ -14,7 +14,7 @@
   jobs: Array,
   skin: Object
   ```
-- <span style="color:green">inventory/:id **GET**</span>
+- <span style="color:green">inventories/:id **GET**</span>
   ```json
   userId: String,
   inventory: [{
@@ -23,23 +23,23 @@
     type: String
   }]
   ```
-###Todo
- - inventory/:id | GET
- - inventory/:id/:token | PUT
-  ```json
-  userId: String,
-  inventory: [{
-    resourceId: Number,
-    quantity: Number,
-    type: String
-  }]
-  ```
- - resource/:id | GET DELETE
- - resource | POST
+ - <span style="color:green">resources/ | GET</span>
+ - <span style="color:green">resources/:id | GET DELETE</span>
+ - <span style="color:green">resources | POST</span>
   ```json
   name: String,
   icon: String,
   description: String
+  ```
+###Todo
+ - inventories/:id/ | PUT
+  ```json
+  userId: String,
+  inventory: [{
+    resourceId: Number,
+    quantity: Number,
+    type: String
+  }]
   ```
  - resource/:id | PUT
   ```json

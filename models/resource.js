@@ -8,3 +8,4 @@ let resourceSchema = new Schema([{
 }]);
 
 module.exports = mongoose.model('resources', resourceSchema);
+
