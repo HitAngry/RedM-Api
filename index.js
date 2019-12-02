@@ -7,9 +7,11 @@ const resourceRouter = require('./routes/resource');
 const whitelistRouter = require('./routes/whitelist');
 const craftRouter = require('./routes/craft');
 const mongoose = require('mongoose');
+      mongoose.set('useFindAndModify', false);
 
 mongoose.connect('mongodb://localhost:27017/westlaws', { useUnifiedTopology: true, useNewUrlParser: true }).
   catch(error => handleError(error));
+
 
 const port = 8050;
 const api = express();
