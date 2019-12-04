@@ -16,7 +16,7 @@
   ```
 ### Inventories
 - **GET** _inventories/:id_
-- **GET** _inventories/:id?action=?type=?id=?quantity=_
+- **GET** _inventories/:id&action=&type=&id=&quantity=_
   List of query avaiable
   - **action** : type of action (**add** or **remove**)
   - **type** : type of what i want add in my inventory (**resource** or **craft**)
