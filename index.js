@@ -12,7 +12,6 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/westlaws', { useUnifiedTopology: true, useNewUrlParser: true }).
   catch(error => handleError(error));
 
-
 const port = 8050;
 const api = express();
 

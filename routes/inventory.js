@@ -26,7 +26,7 @@ router.get('/:userId', async (req, res) => {
                 type: type
               };
               if(await playerHaveFreeSlotInventory(userId)) {
-                inventory = [...inventory, newItem];
+                inventory = replaceFirstFreeSlotByItem(inventory, newItem);
                 inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
                   if(err) {
                     res.sendStatus(400);
@@ -36,6 +36,28 @@ router.get('/:userId', async (req, res) => {
                 })
               } else {
                 res.status(400).send('Inventory full');
+              }
+            } else {
+              res.status(400).send('Item not found');
+            }
+          } else if (action === "remove") {
+            let item = await getItem(id, type);
+            let inventory = await getInventory(userId);
+            if(item) {
+              if(type === "resource") {
+                let newInventory = await removeResourceFromInventory(inventory, item._id, parseInt(quantity))
+                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err, inventory) => {
+                  if(err) {
+                    res.sendStatus(400);
+                  } else {
+                    res.status(200).send(`${item.name} X ${quantity} has been removed to your inventory`);
+                  }
+                })
+              } else if (type === "type") {
+                res.sendStatus(200);
+                // remove juste by search id item in inventory
+              } else {
+                res.status(400).send('Type not found');
               }
             } else {
               res.status(400).send('Item not found');
@@ -54,15 +76,38 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-module.exports = router;
+const removeResourceFromInventory = async (inventory, itemId, quantityHaveToRemove) => {
+  let newInventory = [...inventory];
 
-// inventories/5de0519c143bff125573339c?action=add&type=craft&id=5de260b6b253caa309998e60&quantity=1
-// inventories/5de0519c143bff125573339c?action=add&type=resource&id=5de260b6b253caa309998e60&quantity=12
+  inventory.forEach((item, index) => {
+    if(item.resourceId) {
+      if(item.resourceId.toString() === itemId.toString()) {
+        if(parseInt(item.quantity) > quantityHaveToRemove) {
+          newInventory[index].quantity = parseInt(item.quantity) - quantityHaveToRemove;
+          quantityHaveToRemove = 0;
+          return;
+        } else if (parseInt(item.quantity) === quantityHaveToRemove) {
+          quantityHaveToRemove = 0;
+          newInventory[index] = { resourceId: null, quantity: null, type: null }
+          return;
+        } else if (parseInt(item.quantity) < quantityHaveToRemove) {
+          quantityHaveToRemove = quantityHaveToRemove - parseInt(item.quantity);
+          newInventory[index] = { resourceId: null, quantity: null, type: null }
+        }
+      }
+    }
+  })
 
-// inventories/5de0519c143bff125573339c?action=remove&type=craft&id=5de260b6b253caa309998e60&quantity=12
-// inventories/5de0519c143bff125573339c?action=remove&type=resource&id=5de260b6b253caa309998e60&quantity=12
+  return newInventory;
+}
 
-//http://localhost:8050/inventories/5de0519c143bff125573339c?action=add&type=resource&id=5de260b6b253caa309998e60&quantity=53
+const replaceFirstFreeSlotByItem = (inventory, item) => {
+  let newInventory = [...inventory];
+  let indexFreeSlot = newInventory.findIndex(item => item.resourceId === null)
+  newInventory[indexFreeSlot] = item;
+  console.log(newInventory)
+  return newInventory;
+}
 
 const getItem = async (itemId, type) => {
   let typeModel = null;
@@ -83,10 +128,21 @@ const getItem = async (itemId, type) => {
 
 const playerHaveFreeSlotInventory = async (userId) => {
   let inventory = await getInventory(userId);
-  return inventory.length >= maxInventorySlot ? false : true;
+  let freeSpace = false;
+
+  inventory.forEach(item => {
+    if(!item.resourceId) {
+      freeSpace = true;
+      return;
+    }
+  });
+
+  return freeSpace;
 }
 
 const getInventory = async (userId) => {
   let inventory =  await inventoryModel.find({userId: userId});
   return inventory[0].inventory
 }
+
+module.exports = router;
