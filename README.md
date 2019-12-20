@@ -1,4 +1,4 @@
-# West Laws API
+# RedM API
 
 ## Routes
 ### Users
