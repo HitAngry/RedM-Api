@@ -47,15 +47,20 @@ router.get('/:steamId', (req, res) => {
 
 router.post('/', (req, res) => {
   if(req.body) {
-    const {steamId, firstName, lastName} = req.body;
-    if(!steamId || !firstName || !lastName) {
+    const {steamId, firstName, lastName, money, status, skin} = req.body;
+    if(!steamId || !firstName || !lastName || !money || !status || !skin) {
       res.sendStatus(400);
     } else {
       const user = new userModel({
         steamId: steamId,
         firstName: firstName,
-        lastName: lastName
+        lastName: lastName,
+        money: money,
+        jobs: [],
+        status: status,
+        skin: skin
       });
+      console.log(user);
       user.save(function (err, user) {
         if(err) {
           res.sendStatus(400);
