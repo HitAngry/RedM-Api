@@ -105,7 +105,6 @@ const replaceFirstFreeSlotByItem = (inventory, item) => {
   let newInventory = [...inventory];
   let indexFreeSlot = newInventory.findIndex(item => item.resourceId === null)
   newInventory[indexFreeSlot] = item;
-  console.log(newInventory)
   return newInventory;
 }
 

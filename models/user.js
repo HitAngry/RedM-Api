@@ -8,7 +8,7 @@ let userSchema = new Schema({
   lastName: String,
   money: Array,
   jobs: Array,
-  skin: Object,
+  skin: Array,
 });
 
 module.exports = mongoose.model('users', userSchema);
