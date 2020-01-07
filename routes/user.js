@@ -47,8 +47,8 @@ router.get('/:steamId', (req, res) => {
 
 router.post('/', (req, res) => {
   if(req.body) {
-    const {steamId, firstName, lastName, money, status, skin} = req.body;
-    if(!steamId || !firstName || !lastName || !money || !status || !skin) {
+    const {steamId, firstName, lastName, money, status, skin, position } = req.body;
+    if(!steamId || !firstName || !lastName || !money || !status || !skin || !position) {
       res.sendStatus(400);
     } else {
       const user = new userModel({
@@ -58,7 +58,8 @@ router.post('/', (req, res) => {
         money: money,
         jobs: [],
         status: status,
-        skin: skin
+        skin: skin,
+        position: position
       });
       console.log(user);
       user.save(function (err, user) {

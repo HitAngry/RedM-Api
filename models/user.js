@@ -9,6 +9,7 @@ let userSchema = new Schema({
   money: [Number],
   jobs: Array,
   skin: [Object],
+  position: Array
 });
 
 module.exports = mongoose.model('users', userSchema);
