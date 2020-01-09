@@ -39,15 +39,19 @@
 - **DELETE** _mapitems/:id_
 
 ### Resources
- - **GET** _resources/_
- - **GET** _resources/:id_
- - **DELETE** _resources/:id_
- - **POST** _resources/_
+- **GET** _resources/_
+- **GET** _resources/:id_
+- **DELETE** _resources/:id_
+- **POST** _resources/_
     ```json
     name: String,
     icon: String,
     description: String
     ```
+
+### Crafts
+- **GET** _crafts/_
+
 ### Whitelist
  - **GET** _whitelist/:id_
  - **DELETE** _whitelist/:id_
