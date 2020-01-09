@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     } else {
       res.status(200).send(resources);
     }
-  })
+  });
 });
 
 router.get('/:id', (req, res) => {
