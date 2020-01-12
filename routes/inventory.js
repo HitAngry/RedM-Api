@@ -10,68 +10,76 @@ router.get('/:userId', async (req, res) => {
   if(req.params) {
     const { userId } = req.params;
     if(!userId) {
-      res.sendStatus(400);
-    } else {
-      if(Object.keys(req.query).length > 0) {
-        const { action, type, id, quantity } = req.query;        
-        if(!action, !type, !id, !quantity) {
-          res.sendStatus(400);
-        } else {
-          if(action === "add") {            
-            let resourceOrCraft = await getItem(id, type);
-            if(resourceOrCraft) {
-              let inventory = await getInventory(userId);              
-              let newItem = {
-                resourceId: id,
-                qty: parseInt(quantity, 10),
-                // type: type
-              };
-              if(inventory.length < 16) {
-                inventory.push(newItem);                
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {                    
-                    res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been add to your inventory`);
-                  }
-                })
-              } else {
-                res.status(400).send('Inventory full');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
-          } else if (action === "remove") {
-            const resourceOrCraft = await getItem(id, type);            
-            const inventory = await getInventory(userId);            
-            if(resourceOrCraft) {
-              if(type === "resource") {
-                const newInventory = await removeResourceFromInventory(inventory, resourceOrCraft._id, parseInt(quantity))                
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {
-                    res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been removed to your inventory`);
-                  }
-                })
-              } else if (type === "type") {
-                res.sendStatus(200);
-                // remove juste by search id item in inventory
-              } else {
-                res.status(400).send('Type not found');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
+      return res.sendStatus(400);
+    }
+
+    // If no query params => simple get
+    if (!Object.keys(req.query).length) {
+      const inventory = await getInventory(userId);
+      if (!inventory) {
+        return res.sendStatus(404);
+      }
+      return res.status(200).send(inventory);
+    }
+
+    const { action, type, id, quantity } = req.query;        
+    if(!action, !type, !id) {
+      return res.sendStatus(400);
+    }
+    if(action === "add") {
+      if (!quantity) {
+        return res.sendStatus(400);
+      }
+      let resourceOrCraft = await getItem(id, type);
+      if (!resourceOrCraft) {
+        return res.status(400).send('Item not found');
+      }
+      let inventory = await getInventory(userId);              
+      let newItem = {
+        resourceId: id,
+        qty: parseInt(quantity, 10),
+        // type: type
+      };
+
+      if(inventory.length === 16) {
+        return res.status(400).send('Inventory full');
+      }
+      inventory.push(newItem);                
+      inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
+        if(err) {
+          return res.sendStatus(400);
+        }
+        return res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been add to your inventory`);
+      });
+
+    } else if (action === "remove") {
+      const inventory = await getInventory(userId); 
+
+      if(type === "resource") {
+        if (!quantity) {
+          return res.sendStatus(400);
+        }
+        const resourceOrCraft = await getItem(id, type);
+        if (!resourceOrCraft) {
+          return res.status(400).send('Item not found');
+        }
+        const newInventory = await removeResourceFromInventory(inventory, resourceOrCraft._id, parseInt(quantity))                
+        inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err) => {
+          if(err) {
+            return res.sendStatus(400);
           }
-        }
+          return res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been removed to your inventory`);
+        });
+      } else if (type === "item") {
+        const newInventory = inventory.filter(item => item._id.toString() !== id);        
+        inventoryModel.findOneAndUpdate({ userId }, { $set: { inventory: newInventory } }, { new: true }, (err) => {
+          if (err) {
+            return res.sendStatus(400);
+          }
+          return res.sendStatus(204);
+        });           
       } else {
-        const inventory = await getInventory(userId);
-        if(inventory) {
-          res.status(200).send(inventory);
-        } else {
-          res.sendStatus(404);
-        }
+        return res.status(400).send('Type not found');
       }
     }
   }
@@ -91,12 +99,18 @@ router.post('/:userId/collect/:itemId', async (req, res) => {
   const inventory = await inventoryModel.findOne({ userId });    
   const item = await mapItemModel.findOne({ _id: itemId });
 
-  // Modify the inventory and save to db  
+  // Modify the inventory and save to db
   const newItem = {
     _id: item._id,
-    qty: item.qty,
-    resourceId: item.resourceId,
   };
+  if (item.qty && item.resourceId) {
+    newItem.qty = item.qty;
+    newItem.resourceId = item.resourceId;
+  } else {
+    newItem.hash = item.hash;
+    newItem.name = item.name;
+    newItem.description = item.description;
+  }
   inventory.inventory.push(newItem);
   try {
     await inventory.save();    

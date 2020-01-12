@@ -34,8 +34,8 @@ router.delete('/:id', (req, res) => {
 
 router.post('/', (req, res) => {  
   if(req.body) {
-    const { name, icon, resourceId, description, qty, hash, position } = req.body;    
-    if(!position || (!name || !icon || !hash) && (!resourceId || !qty)) {      
+    const { name, icon, resourceId, description, qty, hash, position } = req.body;
+    if(!position || (!name || !hash) && (!resourceId || !qty)) {
       res.sendStatus(400);
     } else {      
       const mapItem = new mapItemModel({
@@ -50,7 +50,7 @@ router.post('/', (req, res) => {
       mapItem.save(function(err, resource) {
         if(err) {
           res.sendStatus(400);
-        } else {          
+        } else {
           res.status(200).send(mapItem);
         }
       });
