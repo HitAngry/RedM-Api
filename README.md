@@ -22,16 +22,36 @@
   - **type** : type of what i want add in my inventory (**resource** or **craft**)
   - **id** : id of the resource or craft
   - **quantity** : number of the quantity i want
+- **POST** _inventories/:id/collect/:itemId_
+
+### MapItems
+- **GET** _mapitems/_
+- **POST** _mapitems/_
+    ```json
+    resourceId: String,
+    qty: Number,
+    name: String,
+    icon: String,
+    description: String, 
+    hash: String, 
+    position: Object*
+    ```
+- **DELETE** _mapitems/:id_
+
 ### Resources
- - **GET** _resources/_
- - **GET** _resources/:id_
- - **DELETE** _resources/:id_
- - **POST** _resources/_
+- **GET** _resources/_
+- **GET** _resources/:id_
+- **DELETE** _resources/:id_
+- **POST** _resources/_
     ```json
     name: String,
     icon: String,
     description: String
     ```
+
+### Crafts
+- **GET** _crafts/_
+
 ### Whitelist
  - **GET** _whitelist/:id_
  - **DELETE** _whitelist/:id_

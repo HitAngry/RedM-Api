@@ -3,109 +3,152 @@ const router = express.Router();
 const inventoryModel = require('../models/inventory');
 const resourceModel = require('../models/resource');
 const craftModel = require('../models/craft');
+const mapItemModel = require('../models/mapItem');
 const maxInventorySlot = 16;
 
 router.get('/:userId', async (req, res) => {
   if(req.params) {
     const { userId } = req.params;
     if(!userId) {
-      res.sendStatus(400);
-    } else {
-      if(Object.keys(req.query).length > 0) {
-        const { action, type, id, quantity } = req.query;
-        if(!action, !type, !id, !quantity) {
-          res.sendStatus(400);
-        } else {
-          if(action === "add") {
-            let item = await getItem(id, type);
-            if(item) {
-              let inventory = await getInventory(userId);
-              let newItem = {
-                resourceId: id,
-                quantity: quantity,
-                type: type
-              };
-              if(await playerHaveFreeSlotInventory(userId)) {
-                inventory = replaceFirstFreeSlotByItem(inventory, newItem);
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {
-                    res.status(200).send(`${item.name} X ${quantity} has been add to your inventory`);
-                  }
-                })
-              } else {
-                res.status(400).send('Inventory full');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
-          } else if (action === "remove") {
-            let item = await getItem(id, type);
-            let inventory = await getInventory(userId);
-            if(item) {
-              if(type === "resource") {
-                let newInventory = await removeResourceFromInventory(inventory, item._id, parseInt(quantity))
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err, inventory) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {
-                    res.status(200).send(`${item.name} X ${quantity} has been removed to your inventory`);
-                  }
-                })
-              } else if (type === "type") {
-                res.sendStatus(200);
-                // remove juste by search id item in inventory
-              } else {
-                res.status(400).send('Type not found');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
+      return res.sendStatus(400);
+    }
+
+    // If no query params => simple get
+    if (!Object.keys(req.query).length) {
+      const inventory = await getInventory(userId);
+      if (!inventory) {
+        return res.sendStatus(404);
+      }
+      return res.status(200).send(inventory);
+    }
+
+    const { action, type, id, quantity } = req.query;        
+    if(!action, !type, !id) {
+      return res.sendStatus(400);
+    }
+    if(action === "add") {
+      if (!quantity) {
+        return res.sendStatus(400);
+      }
+      let resourceOrCraft = await getItem(id, type);
+      if (!resourceOrCraft) {
+        return res.status(400).send('Item not found');
+      }
+      let inventory = await getInventory(userId);              
+      let newItem = {
+        resourceId: id,
+        qty: parseInt(quantity, 10),
+        // type: type
+      };
+
+      if(inventory.length === 16) {
+        return res.status(400).send('Inventory full');
+      }
+      inventory.push(newItem);                
+      inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
+        if(err) {
+          return res.sendStatus(400);
+        }
+        return res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been add to your inventory`);
+      });
+
+    } else if (action === "remove") {
+      const inventory = await getInventory(userId); 
+
+      if(type === "resource") {
+        if (!quantity) {
+          return res.sendStatus(400);
+        }
+        const resourceOrCraft = await getItem(id, type);
+        if (!resourceOrCraft) {
+          return res.status(400).send('Item not found');
+        }
+        const newInventory = await removeResourceFromInventory(inventory, resourceOrCraft._id, parseInt(quantity))                
+        inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err) => {
+          if(err) {
+            return res.sendStatus(400);
           }
-        }
+          return res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been removed to your inventory`);
+        });
+      } else if (type === "item") {
+        const newInventory = inventory.filter(item => item._id.toString() !== id);        
+        inventoryModel.findOneAndUpdate({ userId }, { $set: { inventory: newInventory } }, { new: true }, (err) => {
+          if (err) {
+            return res.sendStatus(400);
+          }
+          return res.sendStatus(204);
+        });           
       } else {
-        let inventory = await getInventory(userId);
-        if(inventory) {
-          res.status(200).send(inventory);
-        } else {
-          res.sendStatus(404);
-        }
+        return res.status(400).send('Type not found');
       }
     }
   }
 });
 
-const removeResourceFromInventory = async (inventory, itemId, quantityHaveToRemove) => {
-  let newInventory = [...inventory];
+router.post('/:userId/collect/:itemId', async (req, res) => {
+  if (!req.params) {
+    return res.sendStatus(400);
+  }
 
+  const { userId, itemId } = req.params;
+  if(!userId || !itemId) {
+    return res.sendStatus(400);
+  }
+
+  // Get inventory and item from db
+  const inventory = await inventoryModel.findOne({ userId });    
+  const item = await mapItemModel.findOne({ _id: itemId });
+
+  // Modify the inventory and save to db
+  const newItem = {
+    _id: item._id,
+  };
+  if (item.qty && item.resourceId) {
+    newItem.qty = item.qty;
+    newItem.resourceId = item.resourceId;
+  } else {
+    newItem.hash = item.hash;
+    newItem.name = item.name;
+    newItem.description = item.description;
+  }
+  inventory.inventory.push(newItem);
+  try {
+    await inventory.save();    
+  } catch (error) {
+    return res.sendStatus(400);
+  }
+
+  // // Then delete the item from map 
+  try {
+    await mapItemModel.deleteOne({ _id: itemId });
+  } catch (error) {
+    // TODO: Reverse inventory modification
+    return res.sendStatus(400);
+  }
+  return res.status(200).send(newItem);  
+});
+
+const removeResourceFromInventory = async (inventory, resourceId, quantityHaveToRemove) => {
+  let newInventory = [...inventory];
   inventory.forEach((item, index) => {
-    if(item.resourceId) {
-      if(item.resourceId.toString() === itemId.toString()) {
-        if(parseInt(item.quantity) > quantityHaveToRemove) {
-          newInventory[index].quantity = parseInt(item.quantity) - quantityHaveToRemove;
+    if(item.resourceId) {      
+      if(item.resourceId.toString() === resourceId.toString()) {        
+        if(parseInt(item.qty) > quantityHaveToRemove) {          
+          newInventory[index].qty = parseInt(item.qty) - quantityHaveToRemove;
           quantityHaveToRemove = 0;
           return;
-        } else if (parseInt(item.quantity) === quantityHaveToRemove) {
+        } else if (parseInt(item.qty) === quantityHaveToRemove) {          
           quantityHaveToRemove = 0;
-          newInventory[index] = { resourceId: null, quantity: null, type: null }
+          newInventory[index] = { resourceId: null, qty: null }
           return;
-        } else if (parseInt(item.quantity) < quantityHaveToRemove) {
-          quantityHaveToRemove = quantityHaveToRemove - parseInt(item.quantity);
-          newInventory[index] = { resourceId: null, quantity: null, type: null }
+        } else if (parseInt(item.qty) < quantityHaveToRemove) {          
+          quantityHaveToRemove = quantityHaveToRemove - parseInt(item.qty);
+          newInventory[index] = { resourceId: null, qty: null }
         }
       }
     }
-  })
-
-  return newInventory;
-}
-
-const replaceFirstFreeSlotByItem = (inventory, item) => {
-  let newInventory = [...inventory];
-  let indexFreeSlot = newInventory.findIndex(item => item.resourceId === null)
-  newInventory[indexFreeSlot] = item;
-  return newInventory;
+  });
+  return newInventory.filter((item) => item.qty);
 }
 
 const getItem = async (itemId, type) => {
@@ -115,33 +158,17 @@ const getItem = async (itemId, type) => {
   } else if(type === "craft") {
     typeModel = craftModel;
   }
-
-  let item = await typeModel.find({_id: itemId});
-
+  let item = await typeModel.find({_id: itemId});  
   if(item.length > 0) {
     return item[0];
   } else {
     return false;
   }
-}
-
-const playerHaveFreeSlotInventory = async (userId) => {
-  let inventory = await getInventory(userId);
-  let freeSpace = false;
-
-  inventory.forEach(item => {
-    if(!item.resourceId) {
-      freeSpace = true;
-      return;
-    }
-  });
-
-  return freeSpace;
-}
+};
 
 const getInventory = async (userId) => {
   let inventory =  await inventoryModel.find({userId: userId});
-  return inventory[0].inventory
-}
+  return inventory[0].inventory;
+};
 
 module.exports = router;
