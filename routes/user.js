@@ -3,24 +3,7 @@ const router = express.Router();
 const userModel = require('../models/user');
 const inventoryModel = require('../models/inventory');
 
-const defaultInventory = [ // 4*4 slots
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-];
+const defaultInventory = [];
 
 router.get('/:steamId', (req, res) => {
   if(req.params) {
@@ -67,7 +50,7 @@ router.post('/', (req, res) => {
           res.sendStatus(400);
         } else {
           let inventory = new inventoryModel({
-            userId: user._id,
+            userId: steamId,
             inventory: defaultInventory
           });
           inventory.save(function(err, inventory) {

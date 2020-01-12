@@ -53,8 +53,7 @@ router.get('/:userId', async (req, res) => {
       });
 
     } else if (action === "remove") {
-      const inventory = await getInventory(userId); 
-
+      const inventory = await getInventory(userId);
       if(type === "resource") {
         if (!quantity) {
           return res.sendStatus(400);
@@ -71,7 +70,11 @@ router.get('/:userId', async (req, res) => {
           return res.status(200).send(`${resourceOrCraft.name} X ${quantity} has been removed to your inventory`);
         });
       } else if (type === "item") {
-        const newInventory = inventory.filter(item => item._id.toString() !== id);        
+        const newInventory = inventory.filter(item => {
+          if(item.resourceId !== null) {
+            item._id.toString() !== id;
+          }
+        });
         inventoryModel.findOneAndUpdate({ userId }, { $set: { inventory: newInventory } }, { new: true }, (err) => {
           if (err) {
             return res.sendStatus(400);
@@ -96,7 +99,7 @@ router.post('/:userId/collect/:itemId', async (req, res) => {
   }
 
   // Get inventory and item from db
-  const inventory = await inventoryModel.findOne({ userId });    
+  const inventory = await inventoryModel.findOne({ userId });
   const item = await mapItemModel.findOne({ _id: itemId });
 
   // Modify the inventory and save to db
