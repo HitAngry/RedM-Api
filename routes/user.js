@@ -3,7 +3,24 @@ const router = express.Router();
 const userModel = require('../models/user');
 const inventoryModel = require('../models/inventory');
 
-const defaultInventory = [];
+const defaultInventory = [ // 4*4 slots
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+];
 
 router.get('/:steamId', (req, res) => {
   if(req.params) {
@@ -28,12 +45,13 @@ router.get('/:steamId', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', (req, res) => {  
   if(req.body) {
     const {steamId, firstName, lastName, money, status, skin, position } = req.body;
     if(!steamId || !firstName || !lastName || !money || !status || !skin || !position) {
+
       res.sendStatus(400);
-    } else {
+    } else {      
       const user = new userModel({
         steamId: steamId,
         firstName: firstName,
@@ -44,13 +62,15 @@ router.post('/', (req, res) => {
         skin: skin,
         position: position
       });
-      console.log(user);
+
       user.save(function (err, user) {
         if(err) {
           res.sendStatus(400);
         } else {
+          
           let inventory = new inventoryModel({
-            userId: steamId,
+            userId: user._id,
+            steamId: user.steamId,
             inventory: defaultInventory
           });
           inventory.save(function(err, inventory) {
