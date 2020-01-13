@@ -4,22 +4,22 @@ const userModel = require('../models/user');
 const inventoryModel = require('../models/inventory');
 
 const defaultInventory = [ // 4*4 slots
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
-  { resourceId: null, quantity: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
+  { resourceId: null, qty: null, type: null },
 ];
 
 router.get('/:steamId', (req, res) => {
@@ -45,12 +45,12 @@ router.get('/:steamId', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', (req, res) => {  
   if(req.body) {
-    const {steamId, firstName, lastName, money, status, skin} = req.body;
+    const {steamId, firstName, lastName, money, status, skin} = req.body;    
     if(!steamId || !firstName || !lastName || !money || !status || !skin) {
       res.sendStatus(400);
-    } else {
+    } else {      
       const user = new userModel({
         steamId: steamId,
         firstName: firstName,
@@ -60,13 +60,15 @@ router.post('/', (req, res) => {
         status: status,
         skin: skin
       });
-      console.log(user);
+
       user.save(function (err, user) {
         if(err) {
           res.sendStatus(400);
         } else {
+          
           let inventory = new inventoryModel({
             userId: user._id,
+            steamId: user.steamId,
             inventory: defaultInventory
           });
           inventory.save(function(err, inventory) {
