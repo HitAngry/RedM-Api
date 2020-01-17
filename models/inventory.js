@@ -58,7 +58,7 @@ inventorySchema.methods.addItem = async function(item) {
 inventorySchema.methods.removeItem = async function({ resourceId, qty, _id }) {
   if (_id) {
     // Simply replace the provided id    
-    this.inventory[this.inventory.findIndex(slot => slot._id.toString() === _id)] = {
+    this.inventory[this.inventory.findIndex(slot => slot._id && slot._id.toString() === _id)] = {
       resourceId: null,
       qty: null,
       type: null,
