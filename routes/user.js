@@ -91,12 +91,18 @@ router.post('/', (req, res) => {
 });
 
 router.delete('/:steamId', async (req, res) => {
+  if(!req.params) {
+    return res.sendStatus(400);
+  }
+  const { steamId } = req.params;
+  
   if (!steamId) {
     return res.sendStatus(400);
   }
+  
   try {
-    userModel.deleteOne({ steamId });
-    inventory.deleteOne({ steamId });
+    await userModel.deleteOne({ steamId });
+    await inventoryModel.deleteOne({ steamId });
   } catch (error) {
     return res.sendStatus(400);
   }
