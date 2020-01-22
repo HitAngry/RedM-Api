@@ -94,6 +94,10 @@ router.post('/:steamId/collect/:itemId', async (req, res) => {
   const inventory = await inventoryModel.findOne({ steamId });
   const item = await mapItemModel.findOne({ _id: itemId });
 
+  if (!inventory || !item) {
+    return res.sendStatus(404);
+  }
+
   // Modify the inventory and save to db
   const newItem = {
     _id: item._id,
