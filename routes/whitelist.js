@@ -44,11 +44,11 @@ router.delete('/:steamId', (req, res) => {
 
 router.post('/', (req, res) => {
   if(req.body) {
-    const { steamId } = req.body;
-    if(!steamId) {
-      res.sendStatus(400);
+    const { steamId, discordId } = req.body;
+    if(!steamId && !discordId) {
+      res.status(400).send('no steamId or no discordId');
     } else {
-      whitelistModel.findOne({steamId: steamId}, function(err, whitelist) {
+      whitelistModel.findOne({steamId: steamId, discordId: discordId}, function(err, whitelist) {
         if(err) {
           res.sendStatus(400);
         } else {
@@ -56,7 +56,8 @@ router.post('/', (req, res) => {
             res.status(200).send(`${whitelist.steamId} is already whitelisted`);
           } else {
             let whitelist = new whitelistModel({
-              steamId: steamId
+              steamId: steamId,
+              discordId: discordId
             });
             whitelist.save(function(err, whitelist) {
               if(err) {

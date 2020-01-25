@@ -124,7 +124,7 @@ const getItem = async (itemId, type) => {
   } else {
     return false;
   }
-}
+}; //;
 
 const playerHaveFreeSlotInventory = async (userId) => {
   let inventory = await getInventory(userId);
@@ -135,14 +135,14 @@ const playerHaveFreeSlotInventory = async (userId) => {
       freeSpace = true;
       return;
     }
-  });
+  }); //;
 
   return freeSpace;
-}
+};
 
 const getInventory = async (userId) => {
   let inventory =  await inventoryModel.find({userId: userId});
   return inventory[0].inventory
-}
+};  //;
 
 module.exports = router;
