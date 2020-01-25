@@ -42,3 +42,4 @@
     ```
 ## Authors
 * **Simon Philouze** - *Initial work* - [HitAngry](https://github.com/HitAngry)
+* **Sornin de Laubier** - *Contributor* - [SorninL](https://github.com/SorninL)

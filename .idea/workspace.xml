@@ -96,8 +96,8 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="171">
-                <caret line="39" column="19" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
+              <first_editor relative-caret-position="219">
+                <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
               </first_editor>
               <second_editor />
             </state>
@@ -216,18 +216,18 @@
       <workItem from="1576442682208" duration="613000" />
       <workItem from="1576604625635" duration="1062000" />
       <workItem from="1579980059541" duration="116000" />
-      <workItem from="1579980184643" duration="2062000" />
+      <workItem from="1579980184643" duration="2206000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24704000" />
+    <option name="totallyTimeSpent" value="24848000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1654373" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1654373" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="npm" order="2" side_tool="true" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -242,7 +242,7 @@
       <window_info anchor="bottom" id="Floobits" order="8" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50263435" side_tool="true" weight="0.17279822" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49736565" visible="true" weight="0.5518395" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.49736565" visible="true" weight="0.5518395" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -342,8 +342,8 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="171">
-            <caret line="39" column="19" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
+          <first_editor relative-caret-position="219">
+            <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
           </first_editor>
           <second_editor />
         </state>
