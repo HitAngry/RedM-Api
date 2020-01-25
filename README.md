@@ -38,6 +38,7 @@
  - **POST** _whitelist_
     ```json
     steamId: String
+    discordId: String
     ```
 ## Authors
 * **Simon Philouze** - *Initial work* - [HitAngry](https://github.com/HitAngry)
