@@ -1,5 +1,6 @@
-let mongoose = require('mongoose');
-let Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const Types = mongoose.Types;
 
 const MAX_AVAILABLE_SLOTS = 16;
 
@@ -39,6 +40,9 @@ const updateSlotFromItem = (slot, item) => {
 };
 
 inventorySchema.methods.addItem = async function(item) {
+  if (!item._id) {
+    item._id = Types.ObjectId();
+  }
   if (this.inventory.length < MAX_AVAILABLE_SLOTS) {
     this.inventory.push(newItem);
     this.markModified('inventory');
