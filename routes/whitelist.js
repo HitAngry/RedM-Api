@@ -23,6 +23,28 @@ router.get('/:steamId', (req, res) => {
   }
 });
 
+router.get('/getWhitelistByDiscordId/:discordId', (req, res) => {
+  if(req.params) {
+    const { discordId } = req.params;
+    if(!discordId) {
+      res.sendStatus(400);
+    } else {
+      whitelistModel.find({discordId: discordId}, function(err, whitelist) {
+        if(err) {
+          res.sendStatus(400);
+        } else {
+          if(whitelist.length > 0) {
+            res.status(200).send(whitelist);
+          } else {
+            console.log(discordId);
+            res.sendStatus(404);
+          }
+        }
+      });
+    }
+  }
+});
+
 router.delete('/:steamId', (req, res) => {
   if(req.params){
     const { steamId } = req.params;
@@ -55,9 +77,11 @@ router.post('/', (req, res) => {
           if(whitelist !== null) {
             res.status(200).send(`${whitelist.steamId} is already whitelisted`);
           } else {
+            const curDate = new Date();
             let whitelist = new whitelistModel({
               steamId: steamId,
-              discordId: discordId
+              discordId: discordId,
+              createDate: curDate
             });
             whitelist.save(function(err, whitelist) {
               if(err) {
