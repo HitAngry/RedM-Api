@@ -51,11 +51,13 @@ router.delete('/:steamId', (req, res) => {
     if(!req.params) {
       res.sendStatus(400);
     } else {
-      whitelistModel.deleteOne({steamId: steamId}, function(err) {
+      whitelistModel.deleteOne({steamId: steamId}, function(err, result) {
         if(err) {
-          res.sendStatus(404);
+          res.sendStatus(400);
+        } else if (result.deletedCount > 0) {
+          res.status(200).send(`${steamId} has been deleted`);
         } else {
-          res.status(200).send(`${steamId} has been delete`);
+          res.sendStatus(404);
         }
       });
     }
