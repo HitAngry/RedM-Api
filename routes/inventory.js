@@ -24,32 +24,48 @@ router.get('/:steamId', async (req, res) => {
     return res.status(200).send(inventory.inventory);
   }
 
-  const { action, type, id, quantity } = req.query;
-  if(!action, !type, !id) {
+  const { action, type, id, quantity, name, hash, description, icon } = req.query;
+  if(!action, !type) {
     return res.sendStatus(400);
   }
   switch (action) {
     case 'add': {
-      if (!quantity) {
-        return res.sendStatus(400);
-      }
-      let resourceOrCraft = await getResourceOrCraft(id, type);
-      if (!resourceOrCraft) {
-        return res.status(400).send('Item not found');
-      }
+      if (type === 'resource') {
+        if (!quantity) {
+          return res.sendStatus(400);
+        }
+        const newItem = {
+          resourceId: id,
+          qty: parseInt(quantity, 10),
+        };
 
-      let newItem = {
-        resourceId: id,
-        qty: parseInt(quantity, 10),
-        // type: type
-      };
+        try {
+          await inventory.addItem(newItem);
+        } catch (error) {
+          return res.sendStatus(400);
+        }
+        return res.status(200).send(inventory.inventory);
 
-      try {
-        await inventory.addItem(newItem);
-      } catch (error) {
-        return res.sendStatus(400);
+      } else if (type === 'item') {
+        if (!name || !hash) {
+          return res.sendStatus(400);
+        }
+        const newItem = {
+          name,
+          hash,
+          description,
+          icon,
+        };
+
+        try {
+          await inventory.addItem(newItem);
+        } catch (error) {
+          return res.sendStatus(400);
+        }
+        return res.status(200).send(inventory.inventory);
+      } else {
+        return res.status(400).send('no type');
       }
-      return res.status(200).send(inventory.inventory);
     }
     case 'remove': {
       if(type === "resource") {
@@ -93,6 +109,10 @@ router.post('/:steamId/collect/:itemId', async (req, res) => {
 
   const inventory = await inventoryModel.findOne({ steamId });
   const item = await mapItemModel.findOne({ _id: itemId });
+
+  if (!inventory || !item) {
+    return res.sendStatus(404);
+  }
 
   // Modify the inventory and save to db
   const newItem = {

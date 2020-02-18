@@ -88,6 +88,26 @@ router.post('/', (req, res) => {
   } else {
     res.sendStatus(400);
   }
-})
+});
+
+router.delete('/:steamId', async (req, res) => {
+  if(!req.params) {
+    return res.sendStatus(400);
+  }
+  const { steamId } = req.params;
+  
+  if (!steamId) {
+    return res.sendStatus(400);
+  }
+  
+  try {
+    await userModel.deleteOne({ steamId });
+    await inventoryModel.deleteOne({ steamId });
+  } catch (error) {
+    return res.sendStatus(400);
+  }
+  console.log(`steamId ${steamId} has deleted his character`);
+  return res.sendStatus(204);
+});
 
 module.exports = router;
