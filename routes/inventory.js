@@ -3,128 +3,140 @@ const router = express.Router();
 const inventoryModel = require('../models/inventory');
 const resourceModel = require('../models/resource');
 const craftModel = require('../models/craft');
-const maxInventorySlot = 16;
+const mapItemModel = require('../models/mapItem');
 
-router.get('/:userId', async (req, res) => {
-  if(req.params) {
-    const { userId } = req.params;
-    if(!userId) {
-      res.sendStatus(400);
-    } else {
-      if(Object.keys(req.query).length > 0) {
-        const { action, type, id, quantity } = req.query;
-        if(!action, !type, !id, !quantity) {
-          res.sendStatus(400);
-        } else {
-          if(action === "add") {
-            let item = await getItem(id, type);
-            if(item) {
-              let inventory = await getInventory(userId);
-              let newItem = {
-                resourceId: id,
-                quantity: quantity,
-                type: type
-              };
-              if(await playerHaveFreeSlotInventory(userId)) {
-                inventory = replaceFirstFreeSlotByItem(inventory, newItem);
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: inventory}}, {new: true}, (err, inventory) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {
-                    res.status(200).send(`${item.name} X ${quantity} has been add to your inventory`);
-                  }
-                })
-              } else {
-                res.status(400).send('Inventory full');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
-          } else if (action === "remove") {
-            let item = await getItem(id, type);
-            let inventory = await getInventory(userId);
-            if(item) {
-              if(type === "resource") {
-                let newInventory = await removeResourceFromInventory(inventory, item._id, parseInt(quantity))
-                inventoryModel.findOneAndUpdate({userId: userId}, {$set:{inventory: newInventory}}, {new: true}, (err, inventory) => {
-                  if(err) {
-                    res.sendStatus(400);
-                  } else {
-                    res.status(200).send(`${item.name} X ${quantity} has been removed to your inventory`);
-                  }
-                })
-              } else if (type === "type") {
-                res.sendStatus(200);
-                // remove juste by search id item in inventory
-              } else {
-                res.status(400).send('Type not found');
-              }
-            } else {
-              res.status(400).send('Item not found');
-            }
-          }
+
+router.get('/:steamId', async (req, res) => {
+  if (!req.params) {
+    return res.sendStatus(400);
+  }
+  const { steamId } = req.params;
+  if(!steamId) {
+    return res.sendStatus(400);
+  }
+  const inventory = await inventoryModel.findOne({ steamId });
+  if (!inventory || !inventory.inventory) {
+    return res.sendStatus(404);
+  }
+
+  // If no query params => simple get
+  if (!Object.keys(req.query).length) {
+    return res.status(200).send(inventory.inventory);
+  }
+
+  const { action, type, id, quantity } = req.query;
+  if(!action, !type, !id) {
+    return res.sendStatus(400);
+  }
+  switch (action) {
+    case 'add': {
+      if (!quantity) {
+        return res.sendStatus(400);
+      }
+      let resourceOrCraft = await getResourceOrCraft(id, type);
+      if (!resourceOrCraft) {
+        return res.status(400).send('Item not found');
+      }
+
+      let newItem = {
+        resourceId: id,
+        qty: parseInt(quantity, 10),
+        // type: type
+      };
+
+      try {
+        await inventory.addItem(newItem);
+      } catch (error) {
+        return res.sendStatus(400);
+      }
+      return res.status(200).send(inventory.inventory);
+    }
+    case 'remove': {
+      if(type === "resource") {
+        if (!quantity) {
+          return res.sendStatus(400);
         }
+        try {
+          await inventory.removeItem({ resourceId: id, qty: parseInt(quantity) });
+        } catch (error) {
+          return res.sendStatus(400);
+        }
+        return res.sendStatus(204);
+      } else if (type === "item") {
+        try {
+          await inventory.removeItem({ _id: id });
+        } catch (error) {
+          return res.sendStatus(400);
+        }
+        return res.sendStatus(204);
       } else {
-        let inventory = await getInventory(userId);
-        if(inventory) {
-          res.status(200).send(inventory);
-        } else {
-          res.sendStatus(404);
-        }
+        return res.status(400).send('no type');
       }
     }
+    default:
+      return res.status(400).send('no action');
   }
+
 });
 
-const removeResourceFromInventory = async (inventory, itemId, quantityHaveToRemove) => {
-  let newInventory = [...inventory];
+router.post('/:steamId/collect/:itemId', async (req, res) => {
+  if (!req.params) {
+    return res.sendStatus(400);
+  }
 
-  inventory.forEach((item, index) => {
-    if(item.resourceId) {
-      if(item.resourceId.toString() === itemId.toString()) {
-        if(parseInt(item.quantity) > quantityHaveToRemove) {
-          newInventory[index].quantity = parseInt(item.quantity) - quantityHaveToRemove;
-          quantityHaveToRemove = 0;
-          return;
-        } else if (parseInt(item.quantity) === quantityHaveToRemove) {
-          quantityHaveToRemove = 0;
-          newInventory[index] = { resourceId: null, quantity: null, type: null }
-          return;
-        } else if (parseInt(item.quantity) < quantityHaveToRemove) {
-          quantityHaveToRemove = quantityHaveToRemove - parseInt(item.quantity);
-          newInventory[index] = { resourceId: null, quantity: null, type: null }
-        }
-      }
-    }
-  })
+  const { steamId, itemId } = req.params;
+  if(!steamId || !itemId) {
+    return res.sendStatus(400);
+  }
 
-  return newInventory;
-}
+  // Get inventory and item from db
 
-const replaceFirstFreeSlotByItem = (inventory, item) => {
-  let newInventory = [...inventory];
-  let indexFreeSlot = newInventory.findIndex(item => item.resourceId === null)
-  newInventory[indexFreeSlot] = item;
-  console.log(newInventory)
-  return newInventory;
-}
+  const inventory = await inventoryModel.findOne({ steamId });
+  const item = await mapItemModel.findOne({ _id: itemId });
 
-const getItem = async (itemId, type) => {
+  // Modify the inventory and save to db
+  const newItem = {
+    _id: item._id,
+  };
+  if (item.qty && item.resourceId) {
+    newItem.qty = item.qty;
+    newItem.resourceId = item.resourceId;
+  } else {
+    newItem.hash = item.hash;
+    newItem.name = item.name;
+    newItem.description = item.description;
+  }
+
+  try {
+    await inventory.addItem(newItem);
+  } catch (error) {
+    return res.status(400).send('inventory is full');
+  }
+
+  // // Then delete the item from map
+  try {
+    await mapItemModel.deleteOne({ _id: itemId });
+  } catch (error) {
+    // TODO: Reverse inventory modification
+    return res.sendStatus(400);
+  }
+  return res.status(200).send(newItem);
+});
+
+const getResourceOrCraft = async (itemId, type) => {
   let typeModel = null;
   if(type === "resource") {
     typeModel = resourceModel;
-  } else if(type === "craft") {
+  } else if(type === "craft") {
     typeModel = craftModel;
   }
-
-  let item = await typeModel.find({_id: itemId});
-
+  let item = await typeModel.find({ _id: itemId });
   if(item.length > 0) {
     return item[0];
   } else {
     return false;
   }
-}; //;
+};
 
 const playerHaveFreeSlotInventory = async (userId) => {
   let inventory = await getInventory(userId);
@@ -143,6 +155,6 @@ const playerHaveFreeSlotInventory = async (userId) => {
 const getInventory = async (userId) => {
   let inventory =  await inventoryModel.find({userId: userId});
   return inventory[0].inventory
-};  //;
+};
 
 module.exports = router;

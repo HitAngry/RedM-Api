@@ -6,9 +6,10 @@ let userSchema = new Schema({
   isAlive: { type: Boolean, default: true },
   firstName: String,
   lastName: String,
-  money: Array,
+  money: [Number],
   jobs: Array,
-  skin: Object,
+  skin: [Object],
+  position: Array
 });
 
 module.exports = mongoose.model('users', userSchema);

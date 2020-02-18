@@ -6,6 +6,7 @@ const inventoryRouter = require('./routes/inventory');
 const resourceRouter = require('./routes/resource');
 const whitelistRouter = require('./routes/whitelist');
 const craftRouter = require('./routes/craft');
+const mapItemRouter = require('./routes/mapItem');
 const mongoose = require('mongoose');
       mongoose.set('useFindAndModify', false);
 
@@ -23,6 +24,7 @@ api.use('/crafts', craftRouter);
 api.use('/resources', resourceRouter);
 api.use('/whitelist', whitelistRouter);
 api.use('/inventories', inventoryRouter);
+api.use('/mapItems', mapItemRouter);
 
 api.listen(port, () => {
   console.log(`WestLaws API listening on ${port}`);

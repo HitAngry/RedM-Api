@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const craftModel = require('../models/craft');
 
 router.get('/', (req, res) => {
-  res.sendStatus(200);
+  craftModel.find(function(err, crafts) {
+    if(err) {
+      return res.sendStatus(400);
+    }
+
+    return res.status(200).send(crafts);
+  });
 });
 
 router.post('/', (req, res) => {
