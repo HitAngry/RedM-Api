@@ -138,23 +138,4 @@ const getResourceOrCraft = async (itemId, type) => {
   }
 };
 
-const playerHaveFreeSlotInventory = async (userId) => {
-  let inventory = await getInventory(userId);
-  let freeSpace = false;
-
-  inventory.forEach(item => {
-    if(!item.resourceId) {
-      freeSpace = true;
-      return;
-    }
-  }); //;
-
-  return freeSpace;
-};
-
-const getInventory = async (userId) => {
-  let inventory =  await inventoryModel.find({userId: userId});
-  return inventory[0].inventory
-};
-
 module.exports = router;
