@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const inventoryModel = require('../models/inventory');
-const resourceModel = require('../models/resource');
-const craftModel = require('../models/craft');
 const mapItemModel = require('../models/mapItem');
 
 
@@ -143,19 +141,5 @@ router.post('/:steamId/collect/:itemId', async (req, res) => {
   return res.status(200).send(newItem);
 });
 
-const getResourceOrCraft = async (itemId, type) => {
-  let typeModel = null;
-  if(type === "resource") {
-    typeModel = resourceModel;
-  } else if(type === "craft") {
-    typeModel = craftModel;
-  }
-  let item = await typeModel.find({ _id: itemId });
-  if(item.length > 0) {
-    return item[0];
-  } else {
-    return false;
-  }
-};
 
 module.exports = router;
